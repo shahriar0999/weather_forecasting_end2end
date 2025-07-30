@@ -2,13 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import tempfile
-from sklearn.linear_model import LogisticRegression
+import optuna
+from optuna.samplers import TPESampler
 from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from mlflow.models import infer_signature
-from sklearn.model_selection import GridSearchCV
-import os
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 import mlflow
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import  StandardScaler
@@ -154,4 +152,71 @@ mlflow.set_tracking_uri("http://34.227.105.107:5000/")
 mlflow.set_experiment("Xgboost Hyperparameter Tuning")
 
 
-# params
+
+# Start parent MLflow run
+with mlflow.start_run(run_name="Optuna XGBoost Tuning"):
+
+    def objective(trial):
+        with mlflow.start_run(nested=True):
+
+            params = {
+                "n_estimators": trial.suggest_int("n_estimators", 100, 500),
+                "max_depth": trial.suggest_int("max_depth", 3, 10),
+                "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.2),
+                "subsample": trial.suggest_float("subsample", 0.6, 1.0),
+                "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
+                "gamma": trial.suggest_float("gamma", 0, 0.5),
+                "min_child_weight": trial.suggest_int("min_child_weight", 1, 6),
+                "reg_alpha": trial.suggest_float("reg_alpha", 0, 1.0),
+                "reg_lambda": trial.suggest_float("reg_lambda", 1.0, 10.0),
+                "objective": "multi:softmax",
+                "num_class": 3,
+                "eval_metric": "mlogloss",
+                "tree_method": "hist",
+                "use_label_encoder": False,
+                "n_jobs": -1,
+                "random_state": 42,
+            }
+
+            model = XGBClassifier(**params)
+            model.fit(X_train, y_train)
+
+            y_pred = model.predict(X_test)
+
+            accuracy = accuracy_score(y_test, y_pred)
+            precision = precision_score(y_test, y_pred, average="weighted", zero_division=0)
+            recall = recall_score(y_test, y_pred, average="weighted", zero_division=0)
+            f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
+
+            # Log params and metrics
+            mlflow.log_params(params)
+            mlflow.log_metric("accuracy", accuracy)
+            mlflow.log_metric("precision", precision)
+            mlflow.log_metric("recall", recall)
+            mlflow.log_metric("f1_score", f1)
+
+            return f1
+
+    study = optuna.create_study(direction="maximize", sampler=TPESampler(seed=42))
+    study.optimize(objective, n_trials=30, show_progress_bar=True)
+
+    print("Best trial:")
+    print(study.best_trial)
+
+    # Log best parameters and retrain best model
+    best_model = XGBClassifier(**study.best_trial.params, 
+                               objective="multi:softmax", 
+                               num_class=3, 
+                               tree_method="hist", 
+                               use_label_encoder=False, 
+                               random_state=42)
+
+    best_model.fit(X_train, y_train)
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        model_path = os.path.join(tmp_dir, "model")
+        mlflow.sklearn.save_model(best_model, model_path)
+        mlflow.log_artifacts(model_path, "best_model")
+
+    mlflow.log_params(study.best_trial.params)
+    mlflow.log_metric("best_f1_score", study.best_value)
