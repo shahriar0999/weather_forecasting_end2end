@@ -187,3 +187,4 @@ cython_debug/
 
 myenv
 data_ingestion.py
+/data
