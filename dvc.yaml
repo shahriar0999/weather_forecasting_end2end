@@ -1,0 +1,60 @@
+stages:
+  data_cleaning:
+    cmd: python src/features/data_clean.py
+    deps:
+      - src/features/data_clean.py
+      - data/raw/weather_data.csv
+    outs:
+      - data/interim/train.csv
+      - data/interim/test.csv
+    params:
+      - data_ingestion.test_size
+  
+  data_preprocessing:
+    cmd: python src/features/data_preprocessing.py
+    deps:
+      - src/features/data_preprocessing.py
+      - data/interim/train.csv
+      - data/interim/test.csv
+    outs:
+      - data/external/train_clean.csv
+      - data/external/test_clean.csv
+
+  feature_engineering:
+    cmd: python src/features/feature_engineering.py
+    deps:
+      - src/features/feature_engineering.py
+      - data/external/train_clean.csv
+      - data/external/test_clean.csv
+    outs:
+      - data/processed/train_scaled.csv
+      - data/processed/test_scaled.csv
+
+  model_building:
+    cmd: python src/model/model_building.py
+    deps:
+      - src/model/model_building.py
+      - data/processed/train_scaled.csv
+    outs:
+      - models/model.pkl
+
+  model_evaluation:
+    cmd: python src/model/model_evaluation.py
+    deps:
+      - src/model/model_evaluation.py
+      - models/model.pkl
+      - data/processed/test_scaled.csv
+    metrics:
+      - reports/metrics.json
+    outs:
+      - reports/model_info.json
+  
+  model_registration:
+    cmd: python src/model/register_model.py
+    deps:
+      - src/model/register_model.py
+      - reports/model_info.json
+
+    
+    
+
