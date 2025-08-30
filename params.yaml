@@ -1,0 +1,12 @@
+data_ingestion:
+  test_size: 0.20
+model_building:
+  reg_lambda: 4.897988999694628
+  reg_alpha: 0.01735840350576867
+  colsample_bytree: 0.7416443890639367
+  subsample: 0.795795163509494
+  min_child_weight: 1
+  max_depth: 10
+  learning_rate: 0.09038772748945917
+  n_estimators: 410
+  gamma: 0.2948101539979545
