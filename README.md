@@ -4,7 +4,7 @@
     <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
 </a>
 
-This is production grade end to end machine learning project.
+This is production grade end to end machine learning project..
 
 ## Project Organization
 
