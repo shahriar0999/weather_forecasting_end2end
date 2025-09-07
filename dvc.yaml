@@ -29,6 +29,7 @@ stages:
     outs:
       - data/processed/train_scaled.csv
       - data/processed/test_scaled.csv
+      - models/scaler.pkl
 
   model_building:
     cmd: python src/model/model_building.py
