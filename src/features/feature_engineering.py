@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+import pickle
 import os
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -73,6 +74,11 @@ def feature_engineering() -> pd.DataFrame:
     X_test_scaled = pd.DataFrame(_test_data, columns=X_test.columns)
     X_test_scaled['weather_code_binary'] = y_test
     logger.info("Feature engineering completed successfully.")
+
+    # save the scaler object
+    with open("models/scaler.pkl", 'wb') as f:
+        pickle.dump(scaler, f)
+
     return X_train_scaled, X_test_scaled
 
 def main():
