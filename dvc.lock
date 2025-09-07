@@ -71,6 +71,10 @@ stages:
       hash: md5
       md5: cd8c80cce016cafb525d4c4bc7cb2aad
       size: 41005679
+    - path: models/scaler.pkl
+      hash: md5
+      md5: da5dcc01f2cc7c73f6fa02d697a0e46d
+      size: 1283
   model_building:
     cmd: python src/model/model_building.py
     deps:
