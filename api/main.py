@@ -13,6 +13,10 @@ app = FastAPI()
 with open("models/scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
+# load the model
+with open("models/model.pkl", 'rb') as f:
+    model = pickle.load(f)
+
 
 @app.get("/")
 def home():
@@ -33,10 +37,16 @@ def predict(weatherInfo: WeatherInfo):
     df = df.drop(columns='timestamp')
 
     X = scaler.transform(df)
-    print(X)
+    
+    prediction = model.predict(X)
 
-    return df.to_dict(orient='records')
-
+    if prediction[0] == 0:
+        return {"prediction": "Clear Sky"}
+    elif prediction[0] == 1:
+        return {"prediction": "Overcast"}
+    else:
+        return {"prediction": "Rain"}
+    # return prediction
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app", port=8501, reload=True, host="0.0.0.0")
