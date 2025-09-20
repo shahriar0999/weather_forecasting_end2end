@@ -1,0 +1,8 @@
+fastapi==0.116.2
+mlflow==3.3.2
+mlflow_skinny==3.3.2
+mlflow_tracing==3.3.2
+numpy==2.3.3
+pandas==2.3.2
+pydantic==2.11.9
+uvicorn==0.36.0
