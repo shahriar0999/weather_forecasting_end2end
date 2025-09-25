@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: weather-forecasting-deployment
+  labels:
+    app: weather-predictor
+  namespace: weather-forecasting
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-predictor
+  template:
+    metadata:
+      labels:
+        app: weather-predictor
+    spec:
+      containers:
+      - name: weather-forecasting-container
+        image: crownai/weather-prediction-app:v1
+        ports: 
+        - containerPort: 8501
