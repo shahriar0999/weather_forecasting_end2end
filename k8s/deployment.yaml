@@ -19,5 +19,6 @@ spec:
       containers:
       - name: weather-forecasting-container
         image: crownai/weather-prediction-app:v1
+        imagePullPolicy: Never
         ports: 
         - containerPort: 8501
